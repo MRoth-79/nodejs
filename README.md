@@ -28,6 +28,8 @@ cat /var/snap/jenkins/common/jenkins/secrets/initialAdminPassword
 9.Continue the setup of plugins
 
 10.Basic Pipeline
+
+
 pipeline {
     agent any
 
