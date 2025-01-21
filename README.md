@@ -5,6 +5,7 @@
 su -
 
 2.apt update
+
 3.make sure Snap is installed on your system
 apt install snapd
 
