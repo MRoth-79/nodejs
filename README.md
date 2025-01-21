@@ -20,6 +20,7 @@ snap install jenkins --classic
 6.Start and Enable Jenkins
 
 snap start jenkins
+
 snap enable jenkins
 
 7.Open a browser and go to
