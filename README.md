@@ -10,12 +10,15 @@ su -
 apt install snapd
 
 4.Enable Snap socket service
+
 sudo systemctl enable --now snapd.socket
 
 5.Install Jenkins using snap
+
 snap install jenkins --classic
 
 6.Start and Enable Jenkins
+
 snap start jenkins
 snap enable jenkins
 
@@ -23,6 +26,7 @@ snap enable jenkins
 http://localhost:8080
 
 8.Get the initial admin password, use the 'cat' command
+
 cat /var/snap/jenkins/common/jenkins/secrets/initialAdminPassword
 
 9.Continue the setup of plugins
