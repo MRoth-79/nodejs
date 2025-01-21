@@ -1,6 +1,4 @@
-# nodejs
-
-Install Jenkins on Ubuntu instruction(Using snap)
+# nodejs + Install Jenkins on Ubuntu instruction(Using snap)
 
 1.Switch to the Root User or a Sudoer
 su -
