@@ -3,7 +3,7 @@ name: My First Action
 on: push  # Runs when code is pushed
 
 jobs:
-  my-job:
+  my-job: #Here you put the name of the job
     runs-on: ubuntu-latest # The CI-CD pipeline will run on Ubuntu
     steps:
       - name: Checkout code
