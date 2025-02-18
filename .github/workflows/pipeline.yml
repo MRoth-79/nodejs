@@ -1,10 +1,21 @@
-name: Check Docker Version
-on: push
+name: Simple CI/CD Pipeline
+
+on: [push]
+
 jobs:
-  check-docker:
+  bla-bla-bla-bla:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Show Docker Version
-        run: docker --version
-      - name: Hello
-        run: echo "Hello everybody"
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        run: echo "Da0505719903" | docker login -u "berezovsky8" --password-stdin
+
+      - name: Build and tag Docker image
+        run: docker build -t berezovsky8/nodejs-app:latest .
+
+      - name: Push Docker image to DockerHub
+        run: docker push berezovsky8/nodejs-app:latest
+
