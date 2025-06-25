@@ -1,0 +1,77 @@
+# GitHub Actions Workflow for Node.js CI/CD Pipeline
+
+name: Node.js CI/CD Pipeline # Name of the workflow as it appears in the GitHub Actions tab
+
+on:
+  push:
+    branches:
+      - main # This workflow will trigger automatically on pushes to the 'main' branch
+  workflow_dispatch: # Allows manual triggering of the workflow from the GitHub Actions tab
+
+jobs:
+  build-and-run: # Defines a single job named 'build-and-run'
+    runs-on: ubuntu-latest # Specifies that this job will run on the latest Ubuntu virtual machine provided by GitHub
+
+    steps: # A sequence of tasks to be executed as part of the job
+      - name: Checkout Code # Step to clone your repository's code onto the runner
+        uses: actions/checkout@v4 # Uses the official GitHub action for checking out code (v4 for latest features/security)
+
+      - name: Log in to Docker Hub # Step to authenticate with Docker Hub
+        # Uses a dedicated Docker action for secure login.
+        # Credentials are pulled from GitHub Secrets to prevent exposure.
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }} # GitHub Secret for DockerHub username
+          password: ${{ secrets.DOCKER_PASSWORD }} # GitHub Secret for DockerHub password (or PAT)
+
+      - name: Set up Docker Buildx # Step to configure Docker Buildx
+        # Buildx is a Docker CLI plugin that extends 'docker build' capabilities,
+        # enabling advanced features like multi-platform builds and build caching.
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get current date for image tag # Step to generate a unique timestamp-based tag
+        # This ID ('date') allows subsequent steps to reference its output.
+        run: echo "DATE=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT # Generates a timestamp and sets it as an output variable
+
+      - name: Build and Push Docker image # Step to build the Docker image and push it to Docker Hub
+        # Uses a combined action for efficiency and advanced features.
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Specifies the build context ('.' means the Dockerfile is in the root of the checked-out repo)
+          push: true # Set to 'true' to push the built image to the Docker registry
+          # IMPORTANT: Replace 'YOUR_DOCKERHUB_USERNAME' with your actual DockerHub username.
+          # The image will be tagged with both a unique timestamp and 'latest'.
+          tags: ${{ secrets.DOCKER_USERNAME }}/nodejs-app:${{ steps.date.outputs.DATE }},${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+
+      - name: Run Docker container (for verification on runner) # Step to run the Docker container for testing/verification
+        # This container runs on the temporary GitHub Actions runner and is for validation, not persistent deployment.
+        run: |
+          echo "Stopping and removing any previous containers (if existing on this temporary runner)..."
+          # Stop and remove any container with the same name to avoid conflicts.
+          # '|| true' ensures the command doesn't fail the step if the container doesn't exist.
+          docker stop nodejs-app-container || true
+          docker rm nodejs-app-container || true
+          
+          echo "Running container from image ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest"
+          # docker run command:
+          # -d: Runs the container in detached (background) mode.
+          # -p 3000:3000: Maps port 3000 on the runner (host) to port 3000 inside the container.
+          # --name: Assigns a readable name to the container.
+          docker run -d -p 3000:3000 --name nodejs-app-container ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+          
+          echo "Container started. Waiting a few seconds for the app to initialize..."
+          sleep 5 # Pauses the workflow for 5 seconds to allow the Node.js application to fully start.
+          
+          echo "Verifying application access via curl (http://localhost:3000)..."
+          # Uses 'curl' to send an HTTP request to the application's exposed port.
+          # This verifies that the application is running and responsive.
+          # '|| true' prevents the step from failing immediately if curl encounters an error, allowing logs to be seen.
+          curl -v http://localhost:3000 || true 
+          
+          echo "Viewing container logs..."
+          docker logs nodejs-app-container # Displays the container's logs in the GitHub Actions workflow output.
+
+          # Important Note: The container launched here is temporary and runs on the ephemeral GitHub Actions runner.
+          # This runner (virtual machine) is provisioned for each job and destroyed afterwards.
+          # For actual deployment to a persistent environment (e.g., a cloud VM, Kubernetes, server),
+          # you would add dedicated deployment steps here (e.g., SSH, cloud provider's deployment tools).
