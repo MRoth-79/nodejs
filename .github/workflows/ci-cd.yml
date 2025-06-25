@@ -39,7 +39,7 @@ jobs:
         with:
           context: . # Specifies the build context ('.' means the Dockerfile is in the root of the checked-out repo)
           push: true # Set to 'true' to push the built image to the Docker registry
-          # IMPORTANT: Replace 'YOUR_DOCKERHUB_USERNAME' with your actual DockerHub username.
+          # IMPORTANT: Replace 'mroth79' with your actual DockerHub username.
           # The image will be tagged with both a unique timestamp and 'latest'.
           tags: ${{ secrets.DOCKER_USERNAME }}/nodejs-app:${{ steps.date.outputs.DATE }},${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
 
